@@ -1,5 +1,23 @@
 # zgenom
 
+---
+
+A fork of the Zgenom project.  Interested in Zgenom but don't feel like spending the time to copy/paste/write/debug the boilderplate configuration code?  Check out rad-shell!  https://github.com/brandon-fryslie/rad-shell
+
+It's a lightning fast and lightweight a one command install,  It's trivial to get rid of it if you decide it's not for you.  I built it for myself and I personally gain nothing by anyone else using it, but I highly recommend you do because it's awesome. 
+
+## Why does this fork exist?
+
+rad-shell uses zgen/zgenom under the hood, unfortuantely an old bug in zgen was copied on over to zgenom.  This is a blocker for rad-shell which uses `prezto` (a faster/more optimized core zsh framework that is compatible with `ohmyzsh`) to ensure a fast time to new shell.  Here are the bugs that this fork fixes:
+
+- Modules are loaded in the order the user defines.  Upstream, the module load order is different depending on whether you load from an init file or without one (eg after `zgenom reset`).  This is most significant for Prezto, which is broken with Zgenom in a pretty significant way, as all Prezto modules are loaded at the end of the init file.  This has the effect of overriding any aliases, functions, or keymaps/bindings from your custom plugins if Prezto defines the same thing.  This bug is completely fixed on this fork and the module load order is what the user defines in all cases rather than determined by an implementation detail
+- Optimize the zcompile process by avoiding processing non-zsh files.  85% reduction in time spent compiling (~7s -> 1s for me) simply by writing a better glob pattern.  This also addresses an open issue on the zgenom repo where you might get an error compiling certain zsh test files.
+- (feat) You can now disable compiling completely by passing the `--no-compile` flag to `zgenom save`.  The benefit of compilation is very minimal anyway, and you might not like having all the zwc files scattered around
+
+PRs have been opened for each of these issues upstream.  Feedback has been addressed.  If the fixes are merged I'll revert this fork to match upstream.
+
+---
+
 A lightweight yet powerful plugin manager for Zsh.
 
 It is a superset of the brilliant [zgen](https://github.com/tarjoilija/zgen).
@@ -273,8 +291,15 @@ This will create a symlink in the `$ZSHDOTDIR` or `$HOME` directory. This is
 needed by prezto.
 
 **Note:** When `zgenom prezto` is used with `zgenom ohmyzsh` together, `prezto`
-should be **put behind** `ohmyzsh`. Or prompt theme from prezto may not display
+should be put **after** `ohmyzsh`. Or the prompt theme from prezto may not display
 as expected.
+
+Example:
+```zsh
+# Correct order
+zgenom ohmyzsh
+zgeonm prezto
+```
 
 #### Load prezto plugins
 
